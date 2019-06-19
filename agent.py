@@ -1,48 +1,29 @@
 from utility import *
+import random
 
 class Agent:
 
-    '''
-    Abstract agent class but implementing zero-intelligent agents
-
-    Any agent class and its subclass MUST provide
-    - a money attribute (float)
-    - a stocks attribute (int)
-
-    Any agent class and its subclass has act() method
-    The agent returns a tuple of either:
-    (direction) | (direction, price) | (direction, price, quantity)
-    where direction is an int, 0 for buy and 1 for sell; price is 0.2  float of the good and quantity is an int
-
-    Any agent class and its subclass has record() method
-
-    Each agent can owns one share at most
-    '''
-
     def __init__(self, id):
-        self.id = id
+        self.id = id 
+        self.share = 0 
 
     def __str__(self):
-
         return '<Agent ' + str(self.id) + ' > '
         
-
-    def act(self):
-        '''
-        Implementated in subclass
-        '''
+    def act(self, price):
+        # Implementated in subclass accordingly to types of agents
         raise Exception('No implementation')
 
-    def record(self, direction, price, quantity=1):
-        """
+    def record(self, direction, quantity=1):
+        '''
         Record transaction
-        """
-        if direction:
-            self.stocks -= quantity
-            self.money += quantity*price
+        '''
+        print('check direction', direction)
+        
+        if direction: #If Sell
+            self.share -= quantity
         else:
-            self.stocks += quantity
-            self.money -= quantity*price
+            self.share += quantity
 
 
 class ZeroIntelligentAgent(Agent):
@@ -54,10 +35,31 @@ class ZeroIntelligentAgent(Agent):
     def __str__(self):
         return '<Agent %d with sell price %f and bidprice %f>' % (self.id, self.sellprice, self.bidprice)
 
+    def resetPrice(self,price):
+        self.bidprice = random.randint(1,price)
+        self.sellprice = random.randint(price, maxP)
+        
+    def act(self, price):
+        '''
+        If the agent has one share, the agent sell,
+        If the agent has no share, the agent buy
+        '''
+        if self.share:
+            # Sell the share w
+            self.record(SELL)
+        
+        else:
+            self.record(BUY)
+        
+        self.resetPrice(price)
 
 # Test 
 if __name__ == '__main__':
     a = Agent(0)
     print(a)
+    print(BUY, SELL)
     b = ZeroIntelligentAgent(1, 2000, 1)
-    print(b)
+    b.act(12)
+    print('share',b.share, b.sellprice, b.bidprice)
+    b.act(12)
+    print('share',b.share, b.sellprice, b.bidprice)

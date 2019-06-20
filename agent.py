@@ -27,10 +27,10 @@ class Agent:
 
 
 class ZeroIntelligentAgent(Agent):
-    def __init__(self, id, sellprice, bidprice):
-        Agent.__init__(self,id)
-        self.sellprice = sellprice
-        self.bidprice = bidprice
+    def __init__(self, id):
+        Agent.__init__(self,id, sellprice=maxP, bidprice=1)
+        self.sellprice = 0
+        self.bidprice = 0
     
     def __str__(self):
         return '<Agent %d with sell price %f and bidprice %f>' % (self.id, self.sellprice, self.bidprice)
@@ -47,10 +47,10 @@ class ZeroIntelligentAgent(Agent):
         if self.share:
             # Sell the share w
             self.record(SELL)
-        
         else:
+
             self.record(BUY)
-        
+        # Reset the price randomly
         self.resetPrice(price)
 
 # Test 

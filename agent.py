@@ -5,7 +5,7 @@ class Agent:
 
     def __init__(self, id):
         self.id = id 
-        self.share = 0 
+        self.share = 0 #Also detemine whether he is a buyer or seller
 
     def __str__(self):
         return '<Agent ' + str(self.id) + ' > '
@@ -18,7 +18,6 @@ class Agent:
         '''
         Record transaction
         '''
-        print('check direction', direction)
         
         if direction: #If Sell
             self.share -= quantity
@@ -27,19 +26,19 @@ class Agent:
 
 
 class ZeroIntelligentAgent(Agent):
-    def __init__(self, id):
-        Agent.__init__(self,id, sellprice=maxP, bidprice=1)
-        self.sellprice = 0
-        self.bidprice = 0
+    def __init__(self, id, sellprice=maxP, bidprice=1):
+        Agent.__init__(self,id)
+        self.sellprice = sellprice
+        self.bidprice = bidprice
     
     def __str__(self):
-        return '<Agent %d with sell price %f and bidprice %f>' % (self.id, self.sellprice, self.bidprice)
+        return '<Agent %d owns %d share with sell price %f and bidprice %f>' % (self.id, self.share, self.sellprice, self.bidprice)
 
     def resetPrice(self,price):
         self.bidprice = random.randint(1,price)
         self.sellprice = random.randint(price, maxP)
         
-    def act(self, price):
+    def act(self, price, reset=True):
         '''
         If the agent has one share, the agent sell,
         If the agent has no share, the agent buy
@@ -48,11 +47,14 @@ class ZeroIntelligentAgent(Agent):
             # Sell the share w
             self.record(SELL)
         else:
-
             self.record(BUY)
+        
         # Reset the price randomly
-        self.resetPrice(price)
+        if reset:
+            self.resetPrice(price)
 
+    def update(prob):
+        pass
 # Test 
 if __name__ == '__main__':
     a = Agent(0)
@@ -63,3 +65,20 @@ if __name__ == '__main__':
     print('share',b.share, b.sellprice, b.bidprice)
     b.act(12)
     print('share',b.share, b.sellprice, b.bidprice)
+
+    test = [Agent(0), Agent(1), Agent(2), Agent(3)]
+    buyer = [test[0], test[1] ]
+    seller = [test[2],test[3] ]
+    print('+')
+    print(test)
+    print(buyer)
+    print(seller)
+    print('+')
+
+    buyer.remove(test[0])
+    
+    print('+')
+    print(test)
+    print(buyer)
+    print(seller)
+    print('+')

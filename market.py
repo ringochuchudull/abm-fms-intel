@@ -1,6 +1,7 @@
 from utility import *
 from agent import *
 import random
+import matplotlib.pyplot as plt
 
 class Market():
     def __init__(self, num_agents):
@@ -8,12 +9,15 @@ class Market():
         self.num_agents = num_agents
         self.shares = int(num_agents/2)
         
-        self.stockprice = int(maxP/1.8)
+        self.stockprice = int(maxP/1.65)
         self.book = [self.stockprice]
 
         self.agentlist = []
         self.sellerlist = []
         self.buyerlist = []
+
+        self.num_seller = 0
+        self.num_buyer = self.num_agents
 
         self.populate(num_agents)
 
@@ -33,7 +37,7 @@ class Market():
 
     def record_order(self, tranction_price):
         self.book.append(tranction_price)
-    
+        self.stockprice = tranction_price
 
     def run(self):
         
@@ -45,9 +49,40 @@ class Market():
         # If the agent has one share
         if curr_agent.share: 
 
-            print('----------------------')
-            print('Agent ' + str(curr_agent.id) + ' wants to sell... so skip')
-            print('----------------------')
+            if updateSellorBidPrice():
+                curr_agent.sellprice -= 1
+
+            if not self.num_buyer: # Hold
+                self.record_order(self.stockprice)
+                print('Cannot find suitable buyer... so Hold')
+            
+            else:
+
+                index = -1
+                maxBuy = 1
+                for i,s in enumerate(self.agentlist):
+                    if s.bidprice > maxBuy and not s.share:
+                        index, maxBuy = i, s.bidprice
+                print('Agent ' + str(index+1) + ' offers to buy the highest price £' + str(maxBuy))
+
+               # if maxBuy < curr_agent.sellprice: #hold
+                #    self.record_order(self.stockprice)
+                 #   print('All bidprice is lower than the the sell price... so Hold')
+                       
+                #else:
+                curr_buyer_agent = self.agentlist[index]
+                print('Agent ' + str(curr_agent.id) + ' sell to Agent ' + str(index+1) + ' at price £' + str(maxBuy))
+                tranction_price = maxBuy
+                self.record_order(tranction_price)
+
+                curr_agent.act(tranction_price)
+                self.num_seller -= 1
+                self.num_buyer += 1
+
+                curr_buyer_agent.act(tranction_price)
+                self.num_buyer -= 1
+                self.num_seller += 1
+
         
         # If the agent has no share... 
         else:          
@@ -56,24 +91,28 @@ class Market():
                 curr_agent.bidprice += 1
 
             # b)i If no one in the market sells, this agent is forced to buy at stock price
-            if not self.sellerlist :
+            if not self.num_seller:
                 tranction_price = self.stockprice
                 self.record_order(tranction_price)
 
                 curr_agent.act(tranction_price)
-                self.sellerlist.append(curr_agent)
                 self.shares -= 1
+
+                self.num_buyer -= 1
+                self.num_seller += 1
+
                 print('Agent ' + str(curr_agent.id) + ' buys at Market')
+                
 
             # b)ii The agent looks for the lowest sell price among sellers and markets
             else:
 
                 index = -1
                 minSell = maxP
-                for i,s in enumerate(self.sellerlist):
-                    if s.sellprice < minSell:
+                for i,s in enumerate(self.agentlist):
+                    if s.sellprice < minSell and s.share:
                         index, minSell = i, s.sellprice
-                print('Agent ' + str(i+1) + ' offers the lowest price £' + str(minSell))
+                print('Agent ' + str(index+1) + ' offers to sell the lowest price £' + str(minSell))
 
                 if self.stockprice < minSell and self.shares > 0:
                     # Buy from market
@@ -83,45 +122,44 @@ class Market():
                     self.sellerlist.append(curr_agent)
                     
                     self.shares -= 1
+                    self.num_buyer -= 1
+                    self.num_seller += 1
                     print('Agent ' + str(curr_agent.id) + ' buys at Market')
 
                 else:
                     # Buy from Sellers
-                    curr_seller_agent = self.sellerlist[index]
-                    self.sellerlist.pop(index)
-                    print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(index) + ' at price £' + str(minSell))
+                    curr_seller_agent = self.agentlist[index]
+                    print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(index+1) + ' at price £' + str(minSell))
                     
                     tranction_price = minSell
                     self.record_order(tranction_price)
                     
                     curr_agent.act(tranction_price)
-                    self.sellerlist.append(curr_agent)
+                    self.num_buyer -= 1
+                    self.num_seller += 1
 
                     curr_seller_agent.act(tranction_price)
+                    self.num_seller += 1
+                    self.num_buyer -= 1
                     #self.buyerlist.append(curr_seller_agent)
-
 
             self.showMarketAgent()
 
 # Test 
 def _test():
-    m = Market(num_agents=4)
+    m = Market(num_agents=20)
     print('+')
     print(m.agentlist)
     print(m.buyerlist)
     print(m.sellerlist)
     print('+')
-    m.run()
-    m.run()
-    m.run()
-    m.run()
-    m.run()
-    m.run()    
-    m.run()
-    m.run()
-    m.run()
-    m.run()
-    m.run()
+    for i in range(1000):
+        m.run()
+
+    print(m.book)
+
+    plt.plot(m.book)
+    plt.show()
 
 if __name__ == '__main__':
     _test()

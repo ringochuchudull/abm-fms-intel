@@ -51,7 +51,7 @@ class ZeroIntelligentAgent(Agent):
         
         # Reset the price randomly
         if reset:
-            self.resetPrice(price)
+            self.resetPrice(int(price))
 
     def update(prob):
         pass
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     print('+')
 
     buyer.remove(test[0])
-    
+
     print('+')
     print(test)
     print(buyer)

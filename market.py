@@ -38,11 +38,47 @@ class Market():
 
         # If the agent has one share, this agent is the seller
         if curr_agent.share: 
-            curr_agent.sell(market=self)
+            #Return buyer, transaction price
+            curr_buyer, transaction_price = curr_agent.sell(market=self)
 
+            if curr_buyer is None:
+                self.record_order(self.stockprice)
+                print('Cannot find suitable buyer... so Hold')
+            
+            else:
+                self.num_seller -= 1
+                self.num_buyer += 1
+                self.record_order(transaction_price)
+                
+                curr_buyer.act(transaction_price)
+                self.num_buyer -= 1
+                self.num_seller += 1
+
+                print('Agent ' + str(curr_buyer.id) + ' offers to buy the highest price £' + str(transaction_price))
+                print('Agent ' + str(curr_agent.id) + ' sell to Agent ' + str(curr_buyer.id) + ' at price £' + str(transaction_price))
+            
         # If the agent has no share... 
         else:
-            curr_agent.buy(market=self)          
+            curr_seller, transaction_price = curr_agent.buy(market=self)          
+
+            if curr_seller is None:
+                self.record_order(self.stockprice)
+                self.shares -= 1
+                self.num_buyer -= 1
+                self.num_seller += 1
+                print('Agent ' + str(curr_agent.id) + ' buys from Market')
+            
+            else:
+                self.record_order(transaction_price)
+                self.num_buyer -= 1
+                self.num_seller += 1
+
+                curr_seller.act(transaction_price)
+                self.num_seller -= 1
+                self.num_buyer += 1
+
+                print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(curr_seller.id) + ' at price £' + str(transaction_price))
+                
 
         self.showMarketAgent()
 

@@ -41,7 +41,7 @@ class ZeroIntelligentAgent(Agent):
 
         if not market.num_buyer:
             market.record_order(market.stockprice)
-            print('Cannot find suitable buyer... so Hold')
+            return None, None
 
         else:
             index = -1
@@ -49,7 +49,6 @@ class ZeroIntelligentAgent(Agent):
             for i,s in enumerate(market.agentlist):
                 if s.bidprice > maxBuy and not s.share:
                     index, maxBuy = i, s.bidprice
-            print('Agent ' + str(index+1) + ' offers to buy the highest price £' + str(maxBuy))
 
             #if maxBuy < curr_agent.sellprice: #hold
                 #self.record_order(self.stockprice)
@@ -57,18 +56,11 @@ class ZeroIntelligentAgent(Agent):
             #else:
 
             curr_buyer_agent = market.agentlist[index]
-            print('Agent ' + str(self.id) + ' sell to Agent ' + str(index+1) + ' at price £' + str(maxBuy))
             tranction_price = maxBuy
-            market.record_order(tranction_price)
-
             self.act(tranction_price)
-            market.num_seller -= 1
-            market.num_buyer += 1
 
-            curr_buyer_agent.act(tranction_price)
-            market.num_buyer -= 1
-            market.num_seller += 1
-
+            return curr_buyer_agent, tranction_price
+     
     
     def buy(self, market=None):
         # a) Update the price
@@ -77,17 +69,20 @@ class ZeroIntelligentAgent(Agent):
 
         # b)i If no one in the market sells, this agent is forced to buy at stock price
         if not market.num_seller:
+            self.act(market.stockprice)
+            return None, None
+            '''
             tranction_price = market.stockprice
             market.record_order(tranction_price)
 
-            self.act(tranction_price)
+
             market.shares -= 1
 
             market.num_buyer -= 1
             market.num_seller += 1
 
             print('Agent ' + str(self.id) + ' buys at Market')
-            
+            '''
 
         # b)ii The agent looks for the lowest sell price among sellers and markets
         else:
@@ -101,31 +96,38 @@ class ZeroIntelligentAgent(Agent):
 
             if market.stockprice < minSell and market.shares > 0:
                 # Buy from market
+   
+                self.act(market.stockprice)
+                return None, None
+                '''
                 tranction_price = market.stockprice
-                market.record_order(tranction_price)    
-                self.act(tranction_price)
-
+                market.record_order(tranction_price) 
                 market.shares -= 1
 
                 market.num_buyer -= 1
                 market.num_seller += 1
                 print('Agent ' + str(self.id) + ' buys at Market')
-
+                '''
             else:
                 # Buy from Sellers
                 curr_seller_agent = market.agentlist[index]
-                print('Agent ' + str(self.id) + ' buys from Agent ' + str(index+1) + ' at price £' + str(minSell))
+                #print('Agent ' + str(self.id) + ' buys from Agent ' + str(index+1) + ' at price £' + str(minSell))
                 
                 tranction_price = minSell
+                self.act(tranction_price)
+
+                return curr_seller_agent, tranction_price
+                '''
                 market.record_order(tranction_price)
                 
-                self.act(tranction_price)
+
                 market.num_buyer -= 1
                 market.num_seller += 1
 
                 curr_seller_agent.act(tranction_price)
-                market.num_seller += 1
-                market.num_buyer -= 1
+                market.num_seller -= 1
+                market.num_buyer += 1
+                '''
 
     def act(self, price, reset=True):
         '''
@@ -144,6 +146,7 @@ class ZeroIntelligentAgent(Agent):
 
     def update(prob):
         pass
+
 # Test 
 if __name__ == '__main__':
     pass

@@ -15,10 +15,7 @@ class Agent:
         raise Exception('No implementation')
 
     def record(self, direction, quantity=1):
-        '''
-        Record transaction
-        '''
-        
+
         if direction: #If Sell
             self.share -= quantity
         else:
@@ -38,6 +35,98 @@ class ZeroIntelligentAgent(Agent):
         self.bidprice = random.randint(1,price)
         self.sellprice = random.randint(price, maxP)
         
+    def sell(self, market=None):
+        if updateSellorBidPrice():
+            self.sellprice -= 1
+
+        if not market.num_buyer:
+            market.record_order(market.stockprice)
+            print('Cannot find suitable buyer... so Hold')
+
+        else:
+            index = -1
+            maxBuy = 1
+            for i,s in enumerate(market.agentlist):
+                if s.bidprice > maxBuy and not s.share:
+                    index, maxBuy = i, s.bidprice
+            print('Agent ' + str(index+1) + ' offers to buy the highest price £' + str(maxBuy))
+
+            #if maxBuy < curr_agent.sellprice: #hold
+                #self.record_order(self.stockprice)
+                #print('All bidprice is lower than the the sell price... so Hold') 
+            #else:
+
+            curr_buyer_agent = market.agentlist[index]
+            print('Agent ' + str(self.id) + ' sell to Agent ' + str(index+1) + ' at price £' + str(maxBuy))
+            tranction_price = maxBuy
+            market.record_order(tranction_price)
+
+            self.act(tranction_price)
+            market.num_seller -= 1
+            market.num_buyer += 1
+
+            curr_buyer_agent.act(tranction_price)
+            market.num_buyer -= 1
+            market.num_seller += 1
+
+    
+    def buy(self, market=None):
+        # a) Update the price
+        if updateSellorBidPrice():
+            self.bidprice += 1
+
+        # b)i If no one in the market sells, this agent is forced to buy at stock price
+        if not market.num_seller:
+            tranction_price = market.stockprice
+            market.record_order(tranction_price)
+
+            self.act(tranction_price)
+            market.shares -= 1
+
+            market.num_buyer -= 1
+            market.num_seller += 1
+
+            print('Agent ' + str(self.id) + ' buys at Market')
+            
+
+        # b)ii The agent looks for the lowest sell price among sellers and markets
+        else:
+
+            index = -1
+            minSell = maxP
+            for i,s in enumerate(market.agentlist):
+                if s.sellprice < minSell and s.share:
+                    index, minSell = i, s.sellprice
+            print('Agent ' + str(index+1) + ' offers to sell the lowest price £' + str(minSell))
+
+            if market.stockprice < minSell and market.shares > 0:
+                # Buy from market
+                tranction_price = market.stockprice
+                market.record_order(tranction_price)    
+                self.act(tranction_price)
+
+                market.shares -= 1
+
+                market.num_buyer -= 1
+                market.num_seller += 1
+                print('Agent ' + str(self.id) + ' buys at Market')
+
+            else:
+                # Buy from Sellers
+                curr_seller_agent = market.agentlist[index]
+                print('Agent ' + str(self.id) + ' buys from Agent ' + str(index+1) + ' at price £' + str(minSell))
+                
+                tranction_price = minSell
+                market.record_order(tranction_price)
+                
+                self.act(tranction_price)
+                market.num_buyer -= 1
+                market.num_seller += 1
+
+                curr_seller_agent.act(tranction_price)
+                market.num_seller += 1
+                market.num_buyer -= 1
+
     def act(self, price, reset=True):
         '''
         If the agent has one share, the agent sell,
@@ -57,28 +146,4 @@ class ZeroIntelligentAgent(Agent):
         pass
 # Test 
 if __name__ == '__main__':
-    a = Agent(0)
-    print(a)
-    print(BUY, SELL)
-    b = ZeroIntelligentAgent(1, 2000, 1)
-    b.act(12)
-    print('share',b.share, b.sellprice, b.bidprice)
-    b.act(12)
-    print('share',b.share, b.sellprice, b.bidprice)
-
-    test = [Agent(0), Agent(1), Agent(2), Agent(3)]
-    buyer = [test[0], test[1] ]
-    seller = [test[2],test[3] ]
-    print('+')
-    print(test)
-    print(buyer)
-    print(seller)
-    print('+')
-
-    buyer.remove(test[0])
-
-    print('+')
-    print(test)
-    print(buyer)
-    print(seller)
-    print('+')
+    pass

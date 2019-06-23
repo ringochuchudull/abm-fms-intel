@@ -2,8 +2,11 @@ import numpy as np
 
 BUY  = 0
 SELL = 1
+HOLD = -1
+
 maxP = 2000
 minP = 1
+
 draft_param = 0.3
 
 def initbidprice():
@@ -18,7 +21,6 @@ def initsellprice():
 
 def updateSellorBidPrice():
     dd = (1+draft_param)/2
-    
     d = np.random.uniform(low=0.0, high=1.0)
 
     if d < dd: # Approach to dP
@@ -34,5 +36,4 @@ def buyorsell():
         return False
     
 if __name__ == '__main__':
-    print(initbidprice())
-    print(initsellprice())
+    pass

@@ -31,3 +31,30 @@ Price updating rules are as follows.
     (c) After the transaction, seller in this transaction becomes a potential buyer, he
     will have a bid price Pb. And buyer becomes a potential seller, he will have a
     sell price Ps. New Pb and Ps are defined differently in different models.
+
+
+UML Diagram:
+
+|------------------|               |------------------|
+|     Agent        |               | 0IntelligentAgent|
+|------------------|               |------------------|
+|    +id           |               |   buy()          |
+|    +shares       |               |   sell()         |
+|    +sell_record  | --inherent--> |   resetprice()   |
+|    +buy_record   |               |                  |
+|    record()      |               |                  |
+|    newact()      |               |                  | 
+|------------------|               |----------------- |
+        ^
+        |
+        |
+        |
+        v
+|------------------|   
+|     Market       |   
+|------------------|     
+|    populate()    |            
+|  record_order()  |           
+|   newtrade()     | 
+|    run()         |  
+|------------------| 

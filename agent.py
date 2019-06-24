@@ -1,8 +1,15 @@
 from utility import *
 import random
 
+
+# Super Class
 class Agent:
 
+    '''
+    An abstract agent class that allows itself to updates its state and react
+    record(): Change the amount the shares holding and record the new price
+    act(): Simulation of a trading decision
+    '''
     def __init__(self, id):
         self.id = id 
         self.share = 0 #Also detemine whether he is a buyer or seller
@@ -25,10 +32,10 @@ class Agent:
 
     def newact(self, price):
         # Implementated in subclass accordingly to types of agents
-
         # This method should return 'dealer(Agent Object)', 'transaction_price(int)' 'direction(BUY/SELL)' 
         raise Exception('No implementation')
 
+# Sub Class
 class ZeroIntelligentAgent(Agent):
     def __init__(self, id, sellprice=maxP, bidprice=1):
         Agent.__init__(self,id)
@@ -60,8 +67,7 @@ class ZeroIntelligentAgent(Agent):
             curr_buyer_agent = market.agentlist[index]
             tranction_price = maxBuy
 
-            return curr_buyer_agent, tranction_price
-     
+            return curr_buyer_agent, tranction_price     
     
     def buy(self, market=None):
         # a) Update the price
@@ -73,7 +79,6 @@ class ZeroIntelligentAgent(Agent):
             return None, market.stockprice
 
         else:
-
             index = -1
             minSell = maxP
             for i,s in enumerate(market.agentlist):
@@ -104,9 +109,9 @@ class ZeroIntelligentAgent(Agent):
         if reset:
             print('reset price')
             self.resetPrice(int(price))
-        
-    def newact(self, market):
 
+    def newact(self, market):
+        # If the agent has one share, the agent is a seller
         if self.share:
             direction = SELL
             current_buyer, transaction_price = self.sell(market=market)

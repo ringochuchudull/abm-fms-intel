@@ -36,6 +36,114 @@ class Agent:
         raise Exception('No implementation')
 
 # Sub Class
+class ImitatingAgent(Agent):
+    def __init__(self, id, sellprice=maxP, bidprice=1):
+        Agent.__init__(self,id)
+        self.sellprice = sellprice
+        self.bidprice = bidprice
+    
+    def __str__(self):
+        return '<ImitatingAgent %d owns %d share with sell price %f and bidprice %f>' % (self.id, self.share, self.sellprice, self.bidprice)
+
+    def resetPrice(self, market=None):
+        if self.share > 0: 
+            # Case as of a Potential Seller
+            temp = []
+            temp = [a for a in market.agentlist if a.share]
+            random.shuffle(temp)
+            tempAgent = temp[0]
+            self.sellprice = tempAgent.sellprice
+        
+        elif not self.share:
+            # Case as of a potential buyer
+            temp = []
+            temp = [a for a in market.agentlist if not a.share]
+            random.shuffle(temp)
+            tempAgent = temp[0]
+            self.bidprice = tempAgent.bidprice
+        #self.sellprice = random.randint(price, maxP)
+        
+    def sell(self, market=None):
+        if updateSellorBidPrice():
+            self.sellprice -= 1
+
+        if not market.num_buyer:
+            market.record_order(market.stockprice)
+            return None, None
+
+        else:
+            index = -1
+            maxBuy = 1
+            for i,s in enumerate(market.agentlist):
+                if s.bidprice > maxBuy and not s.share:
+                    index, maxBuy = i, s.bidprice
+
+            curr_buyer_agent = market.agentlist[index]
+            tranction_price = maxBuy
+
+            return curr_buyer_agent, tranction_price     
+    
+    def buy(self, market=None):
+        # a) Update the price
+        if updateSellorBidPrice():
+            self.bidprice += 1
+
+        if not market.num_seller:
+            print('haha')
+            return None, market.stockprice
+
+        else:
+            index = -1
+            minSell = maxP
+            for i,s in enumerate(market.agentlist):
+                if s.sellprice < minSell and s.share:
+                    index, minSell = i, s.sellprice
+            print('Agent ' + str(index+1) + ' offers to sell the lowest price £' + str(minSell))
+
+            # Buy at market
+            if market.stockprice < minSell and market.shares > 0:
+                return None, market.stockprice
+
+            else:
+                # Buy from Sellers
+                curr_seller_agent = market.agentlist[index]
+                tranction_price = minSell
+                return curr_seller_agent, tranction_price
+
+    def record(self, direction, price, market=None, quantity=1, reset=True):
+        
+        if direction: #If Sell
+            self.share -= quantity
+            self.sell_record.append(price)
+
+        else:
+            self.share += quantity
+            self.buy_record.append(price)
+
+        if reset:
+            print('reset price')
+            print(market)
+            self.resetPrice(market=market)
+
+    def newact(self, market):
+        # If the agent has one share, the agent is a seller
+        if self.share:
+            direction = SELL
+            current_buyer, transaction_price = self.sell(market=market)
+            if current_buyer is not None:
+                self.record(SELL, transaction_price, market)
+            return current_buyer, transaction_price, direction
+        
+        else:
+            direction = BUY
+            current_seller, transaction_price = self.buy(market=market)
+            self.record(BUY, transaction_price, market)
+            return current_seller, transaction_price, direction
+
+class PalamAgent(Agent):
+    pass
+
+# Sub Class
 class ZeroIntelligentAgent(Agent):
     def __init__(self, id, sellprice=maxP, bidprice=1):
         Agent.__init__(self,id)
@@ -43,7 +151,7 @@ class ZeroIntelligentAgent(Agent):
         self.bidprice = bidprice
     
     def __str__(self):
-        return '<Agent %d owns %d share with sell price %f and bidprice %f>' % (self.id, self.share, self.sellprice, self.bidprice)
+        return '<0IQAgent %d owns %d share with sell price %f and bidprice %f>' % (self.id, self.share, self.sellprice, self.bidprice)
 
     def resetPrice(self,price):
         self.bidprice = random.randint(1,price)
@@ -96,7 +204,7 @@ class ZeroIntelligentAgent(Agent):
                 tranction_price = minSell
                 return curr_seller_agent, tranction_price
 
-    def record(self, direction, price, quantity=1, reset=True):
+    def record(self, direction, price, market=None, quantity=1, reset=True):
         
         if direction: #If Sell
             self.share -= quantity

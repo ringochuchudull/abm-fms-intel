@@ -50,9 +50,13 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            self.agentlist.append(ZeroIntelligentAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
-            self.buyerlist = self.agentlist
-
+            if probabilityGenerator(0.3): 
+                self.agentlist.append(ImitatingAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
+            else:
+                self.agentlist.append(ZeroIntelligentAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
+            
+        self.buyerlist = self.agentlist
+s
     def record_order(self, tranction_price):
         self.book.append(tranction_price)
         self.stockprice = tranction_price
@@ -76,7 +80,7 @@ class Market():
                 self.record_order(transaction_price)
 
                 # Update the record of curr_agent's dealer
-                dealer.record(BUY, transaction_price)
+                dealer.record(BUY, transaction_price, self)
                 self.num_buyer -= 1
                 self.num_seller += 1
 
@@ -101,7 +105,7 @@ class Market():
                     self.num_seller += 1
 
                     # Update the market stockprice
-                    dealer.record(SELL, transaction_price)
+                    dealer.record(SELL, transaction_price, self)
                     self.num_seller -= 1
                     self.num_buyer += 1
 
@@ -130,7 +134,6 @@ class Market():
 # Test 
 def _test():
     m1.plotStockTrend()
-
 
 if __name__ == '__main__':
     _test()

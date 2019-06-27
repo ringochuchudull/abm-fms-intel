@@ -34,6 +34,13 @@ def buyorsell():
         return True
     else:
         return False
+
+def probabilityGenerator(boundary=0.25):
+    a = np.random.uniform(low=0, high=1)
+    if a < boundary:
+        return True
+    return False
+
     
 if __name__ == '__main__':
     pass

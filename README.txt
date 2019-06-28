@@ -38,6 +38,7 @@ Structure of PalamAgent:
     https://webhome.phy.duke.edu/~palmer/papers/arob98.pdf
 
     Also 'Conditional-action agent': Artificial Economic Life: A Simple Model of a Stockmarket
+    http://www2.econ.iastate.edu/tesfatsi/SFISTOCKDetailed.LT.htm
 
 UML Diagram:
 

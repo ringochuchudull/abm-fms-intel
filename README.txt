@@ -33,6 +33,12 @@ Price updating rules are as follows.
     sell price Ps. New Pb and Ps are defined differently in different models.
 
 
+Structure of PalamAgent:
+    Please refer to Section 3 of this link:
+    https://webhome.phy.duke.edu/~palmer/papers/arob98.pdf
+
+    Also 'Conditional-action agent': Artificial Economic Life: A Simple Model of a Stockmarket
+
 UML Diagram:
 
 |------------------|               |------------------|

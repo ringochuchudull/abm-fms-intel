@@ -50,13 +50,15 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
+            #self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
+
             if probabilityGenerator(0.3): 
                 self.agentlist.append(ImitatingAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
             else:
                 self.agentlist.append(ZeroIntelligentAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
-            
+
         self.buyerlist = self.agentlist
-s
+
     def record_order(self, tranction_price):
         self.book.append(tranction_price)
         self.stockprice = tranction_price
@@ -74,12 +76,15 @@ s
                 print('Cannot find suitable buyer... so Hold')
             else:
                 # If there is someone willing to buy the share
-                self.num_seller -= 1
-                self.num_buyer += 1
+
                 # Update the market stockprice
                 self.record_order(transaction_price)
 
                 # Update the record of curr_agent's dealer
+                curr_agent.record(SELL, transaction_price, self)
+                self.num_seller -= 1
+                self.num_buyer += 1
+
                 dealer.record(BUY, transaction_price, self)
                 self.num_buyer -= 1
                 self.num_seller += 1
@@ -91,6 +96,7 @@ s
 
                 # If nobody sells or lowest sellprice is lower than stockprice, buy from market
                 if dealer is None:
+                    curr_agent.record(BUY, transaction_price, self)
                     self.record_order(self.stockprice)
                     self.shares -= 1
 
@@ -101,6 +107,7 @@ s
                 else:
 
                     self.record_order(transaction_price)
+                    curr_agent.record(BUY, transaction_price, self)
                     self.num_buyer -= 1
                     self.num_seller += 1
 

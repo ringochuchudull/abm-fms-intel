@@ -20,7 +20,7 @@ class Agent:
     def __str__(self):
         return '<Agent ' + str(self.id) + ' > '
         
-    def record(self, direction, trans_price, quantity=1):
+    def record(self, direction, trans_price, market=None, quantity=1):
 
         if direction: #If Sell
             self.share -= quantity
@@ -30,10 +30,39 @@ class Agent:
             self.share += quantity
             self.buy_record.append(trans_price)
 
-    def newact(self, price):
+    def newact(self):
         # Implementated in subclass accordingly to types of agents
         # This method should return 'dealer(Agent Object)', 'transaction_price(int)' 'direction(BUY/SELL)' 
         raise Exception('No implementation')
+
+    def profit(self):
+        return sum(self.sell_record) - sum(self.buy_record)
+
+class PalamAgent(Agent):
+    def __init__(self, id, sellprice=maxP, bidprice=1):
+        Agent.__init__(self,id)
+        self.sellprice = sellprice
+        self.bidprice = bidprice
+
+        self.tradeSequence = ''
+
+    def __str__(self):
+        return '<ImitatingAgent %d owns %d share with sell price %f and bidprice %f and sequence %s>' % (self.id, self.share, self.sellprice, self.bidprice, self.tradeSequence)
+
+    # Must Implement
+    def record(self, direction, trans_price, market=None, quantity=1):
+        '''
+        Will be called once after transaction in the market
+        This function aims to change the internal state
+        '''
+        pass
+
+    # Must implement
+    def newact(self):
+
+        # This method should return 'dealer(Agent Object)', 'transaction_price(int)' 'direction(BUY/SELL)'
+        pass
+
 
 # Sub Class
 class ImitatingAgent(Agent):
@@ -61,14 +90,13 @@ class ImitatingAgent(Agent):
             random.shuffle(temp)
             tempAgent = temp[0]
             self.bidprice = tempAgent.bidprice
-        #self.sellprice = random.randint(price, maxP)
         
     def sell(self, market=None):
         if updateSellorBidPrice():
             self.sellprice -= 1
 
         if not market.num_buyer:
-            market.record_order(market.stockprice)
+            #market.record_order(market.stockprice)
             return None, None
 
         else:
@@ -130,18 +158,15 @@ class ImitatingAgent(Agent):
         if self.share:
             direction = SELL
             current_buyer, transaction_price = self.sell(market=market)
-            if current_buyer is not None:
-                self.record(SELL, transaction_price, market)
+            #if current_buyer is not None:
+            #    self.record(SELL, transaction_price, market)
             return current_buyer, transaction_price, direction
         
         else:
             direction = BUY
             current_seller, transaction_price = self.buy(market=market)
-            self.record(BUY, transaction_price, market)
+            #self.record(BUY, transaction_price, market)
             return current_seller, transaction_price, direction
-
-class PalamAgent(Agent):
-    pass
 
 # Sub Class
 class ZeroIntelligentAgent(Agent):
@@ -162,7 +187,7 @@ class ZeroIntelligentAgent(Agent):
             self.sellprice -= 1
 
         if not market.num_buyer:
-            market.record_order(market.stockprice)
+            #market.record_order(market.stockprice)
             return None, None
 
         else:
@@ -223,14 +248,14 @@ class ZeroIntelligentAgent(Agent):
         if self.share:
             direction = SELL
             current_buyer, transaction_price = self.sell(market=market)
-            if current_buyer is not None:
-                self.record(SELL, transaction_price)
+            #if current_buyer is not None:
+            #    self.record(SELL, transaction_price)
             return current_buyer, transaction_price, direction
         
         else:
             direction = BUY
             current_seller, transaction_price = self.buy(market=market)
-            self.record(BUY, transaction_price)
+            #self.record(BUY, transaction_price)
             return current_seller, transaction_price, direction
 
 # Test 

@@ -63,6 +63,13 @@ class Market():
         self.book.append(tranction_price)
         self.stockprice = tranction_price
 
+    def releaseDivideEnd(self,dMinusOne): 
+        '''
+        In the company of stock earns money, the company release profit to shareholder
+        '''
+        
+
+    # Describe the function of the specialist’s in the market
     def newtrade(self):
         
         curr_agent = self.agentlist[random.randint(0,self.num_agents-1)]

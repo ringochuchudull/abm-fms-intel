@@ -1,9 +1,9 @@
 Agent based modelling for financial stock market.
 ===================================================
-(i) There are N agents and N/2 shares in our artificial stock market, each agent can
-only own one share at most. It means that in every time step, there are N/2 agents
+(i) There are N agents and N/2 shares in the artificial stock market, each agent can
+only own one share at most. At every time step, there are N/2 agents
 who own shares and are potential sellers, while the N/2 agents who do not own
-shares are potential buyers. If the agent i is a potential sellers, he will have a sell
+shares are potential buyers., If the agent i is a potential sellers, he will have a sell
 price Ps(i), also if the he is a potential buyers, he will have a bid price Pb(i)
 
 (ii) Initially we randomly set the buyers bid price Pb and sellers sell price Ps in a
@@ -32,15 +32,22 @@ Price updating rules are as follows.
     will have a bid price Pb. And buyer becomes a potential seller, he will have a
     sell price Ps. New Pb and Ps are defined differently in different models.
 
+================================
+Useful resources:
+    background material:
+        http://pages.stern.nyu.edu/~jhasbrou/Teaching/POST%20Draft%20syllabus/powerpoints/dealers.pdf
 
-Structure of PalamAgent:
-    Please refer to Section 3 of this link:
-    https://webhome.phy.duke.edu/~palmer/papers/arob98.pdf
+    Structure of PalamAgent:
+        Please refer to Section 3 of this link:
+        https://webhome.phy.duke.edu/~palmer/papers/arob98.pdf
 
-    Also 'Conditional-action agent': Artificial Economic Life: A Simple Model of a Stockmarket
-    http://www2.econ.iastate.edu/tesfatsi/SFISTOCKDetailed.LT.htm
+        Also 'Conditional-action agent': Artificial Economic Life: A Simple Model of a Stockmarket
+        http://www2.econ.iastate.edu/tesfatsi/SFISTOCKDetailed.LT.htm
 
-UML Diagram:
+    Quantitative Research
+        https://arxiv.org/pdf/1703.06840.pdf
+
+Rough UML Diagram:
 
 |------------------|               |------------------|
 |     Agent        |               | 0IntelligentAgent|

@@ -1,6 +1,7 @@
 from utility import *
 import random
 
+import numpy as np #np.exp
 
 # Super Class
 class Agent:
@@ -45,10 +46,19 @@ class PalamAgent(Agent):
         self.bidprice = bidprice
 
         self.tradeSequence = ''
+        
+        self.wealth = 1300
 
     def __str__(self):
         return '<ImitatingAgent %d owns %d share with sell price %f and bidprice %f and sequence %s>' % (self.id, self.share, self.sellprice, self.bidprice, self.tradeSequence)
 
+    # The agent maxises this expetation value of the utility function
+    def CARA(self, w, lambdaparam=0.5):
+        return -np.exp(-lambdaparam*w)
+    
+    
+    def autoregressiveprocess1(self, dtminus1, wt): # Auto progressive of order 1
+        return 10+ 0.95*(dtminus1 - 10)+ wt
     # Must Implement
     def record(self, direction, trans_price, market=None, quantity=1):
         '''

@@ -45,15 +45,19 @@ class Market():
         self.steps = steps
 
         self.populate(num_agents)
-        
+
+        self.maxPurchase = int(self.shares/2)
+        self.minPurchase = 1
+
+        self.tradeSequence = ''
 
     def populate(self, n):
         # Create N agents
         for i in range(n):
             #self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
 
-            if probabilityGenerator(0.3): 
-                self.agentlist.append(ImitatingAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
+            if probabilityGenerator(0.3):
+                self.agentlist.append(ImitatingAgentV2(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
             else:
                 self.agentlist.append(ZeroIntelligentAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
 
@@ -63,17 +67,21 @@ class Market():
         self.book.append(tranction_price)
         self.stockprice = tranction_price
 
+    @staticmethod
+    def autoregressiveprocess1(dtminus1, wt): # Auto progressive of order 1
+        return 10+ 0.95*(dtminus1 - 10)+ wt
+
     def releaseDivideEnd(self,dMinusOne): 
         '''
         In the company of stock earns money, the company release profit to shareholder
         '''
-        
+        pass
 
     # Describe the function of the specialist’s in the market
     def newtrade(self):
         
         curr_agent = self.agentlist[random.randint(0,self.num_agents-1)]
-        dealer, transaction_price, direction = curr_agent.newact(market=self)
+        dealer, transaction_price, direction, quantity = curr_agent.newact(market=self)
 
         if direction is SELL:
 
@@ -81,58 +89,82 @@ class Market():
                 # If there is noone willing to buy the share from curr_agent, then...
                 self.record_order(self.stockprice)
                 print('Cannot find suitable buyer... so Hold')
+                self.tradeSequence += '#'
+
             else:
                 # If there is someone willing to buy the share
+                if dealer.offer(direction=BUY, price=transaction_price, quantity=quantity):
+                    # Update the market stockprice
+                    self.record_order(transaction_price)
 
-                # Update the market stockprice
-                self.record_order(transaction_price)
+                    # Update the record of curr_agent's dealer
+                    curr_agent.record(direction=SELL, price=transaction_price, market=self, quantity=quantity)
+                    self.num_seller -= 1
+                    self.num_buyer += 1
 
-                # Update the record of curr_agent's dealer
-                curr_agent.record(SELL, transaction_price, self)
-                self.num_seller -= 1
-                self.num_buyer += 1
+                    dealer.record(direction=BUY, price=transaction_price, market=self, quantity=quantity)
+                    self.num_buyer -= 1
+                    self.num_seller += 1
 
-                dealer.record(BUY, transaction_price, self)
-                self.num_buyer -= 1
-                self.num_seller += 1
+                    print('Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
+                    print('Agent ' + str(curr_agent.id) + ' sell to Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
 
-                print('Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
-                print('Agent ' + str(curr_agent.id) + ' sell to Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
-                      
+                    self.tradeSequence += '1'
+                else:
+                    print('Offer declined')
+                    self.record_order(self.stockprice)
+                    self.tradeSequence += '#'
+
         elif direction is BUY:
 
                 # If nobody sells or lowest sellprice is lower than stockprice, buy from market
-                if dealer is None:
-                    curr_agent.record(BUY, transaction_price, self)
+                if dealer is None and self.shares >= quantity:
+                    curr_agent.record(direction=BUY, price=transaction_price, market=self, quantity=quantity)
                     self.record_order(self.stockprice)
-                    self.shares -= 1
+                    self.shares -= quantity
 
                     self.num_buyer -= 1
                     self.num_seller += 1
                     print('Agent ' + str(curr_agent.id) + ' buys from Market')
-                
+                    self.tradeSequence += '0'
+
+                elif dealer is not None: # There is a suitable dealer
+
+                    # Ask the dealer whether to accept
+                    if dealer.offer(direction=SELL, price=transaction_price, quantity=quantity):
+                        self.record_order(transaction_price)
+                        curr_agent.record(direction=BUY, price=transaction_price, market=self, quantity=quantity)
+                        self.num_buyer -= 1
+                        self.num_seller += 1
+
+                        # Update the market stockprice
+                        dealer.record(direction=SELL, price=transaction_price, market=self, quantity=quantity)
+                        self.num_seller -= 1
+                        self.num_buyer += 1
+
+                        print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
+                        self.tradeSequence += '0'
+
+                    else:
+                        # If the dealer declines:
+                        print('Refuse to trade')
+                        self.record_order(self.stockprice)
+                        self.tradeSequence += '#'
                 else:
-
-                    self.record_order(transaction_price)
-                    curr_agent.record(BUY, transaction_price, self)
-                    self.num_buyer -= 1
-                    self.num_seller += 1
-
-                    # Update the market stockprice
-                    dealer.record(SELL, transaction_price, self)
-                    self.num_seller -= 1
-                    self.num_buyer += 1
-
-                    print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
-            
+                    input()
+                    # Dealer is None and Market do not have enough share
+                    self.tradeSequence += '#'
         else:
-            raise Exception('Neithher Buy nor Sell')
+            raise Exception('Neither Buy nor Sell')
+            self.tradeSequence += '#'
 
         self.showMarketAgent()
+
 
     def run(self):
         for _ in range(self.steps):
             self.newtrade()
+            #input()
 
     def showMarketAgent(self):
         print('-------------------------------------')

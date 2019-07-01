@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     
-    m1 = Market(num_agents=20,steps=400)
+    m1 = Market(num_agents=20,steps=120)
     m1.run()
+    print(len(m1.tradeSequence))
     m1.plotStockTrend()
 
+    print(autoregressiveprocess1(2, 2))
     #print(m1.book)
-    print(m1.num_buyer,m1.num_seller)
+    #print(m1.num_buyer,m1.num_seller)
     #m1.plotStockTrend()
     #import numpy as np
     #import matplotlib.pyplot as plt

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     
-    m1 = Market(num_agents=20,steps=120)
+    m1 = Market(num_agents=25,steps=350)
     m1.run()
     print(len(m1.tradeSequence))
     m1.plotStockTrend()

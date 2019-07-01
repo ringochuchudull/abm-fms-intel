@@ -151,7 +151,7 @@ class Market():
                         self.record_order(self.stockprice)
                         self.tradeSequence += '#'
                 else:
-                    input()
+                    #input()
                     # Dealer is None and Market do not have enough share
                     self.tradeSequence += '#'
         else:

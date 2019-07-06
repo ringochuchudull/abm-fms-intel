@@ -18,6 +18,9 @@ class Market():
     num_seller(Integer): Number of sellers in the market
     num_buyer(Integer): Number of buyer in the marker
     steps(Integer): Number of iterateration this market will run
+    maxPurcase(Integer): Max purchasing number of shares
+    minPurchase(Integer): Min number of purchasing shares
+    tradeSequence(String): A string records each market action. 1:SELL, 0:BUY, #:HOLD
 
     Function:
     -populate(n="number_agent(int)"): Initate the market by creating N agents, only runs once
@@ -35,31 +38,41 @@ class Market():
         self.num_agents = num_agents
         self.shares = int(num_agents/2)
         
+        # Initial Stock Price
         self.stockprice = int(maxP/1.65)
+        
+        # An array to keep trace of all transaction price
         self.book = []
 
+        # An array to keep records of all agents in the market
         self.agentlist = []
 
         self.num_seller = 0
         self.num_buyer = self.num_agents
+
+        # Number of timesteps
         self.steps = steps
 
-        self.populate(num_agents)
-
+        # Maximum number of purchases
         self.maxPurchase = int(self.shares/2)
         self.minPurchase = 1
 
+        # A String to record buy Sell or hold
         self.tradeSequence = ''
+
+        # initialize the market with agents
+        self.populate(num_agents)
 
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            #self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
 
             if probabilityGenerator(0.3):
-                self.agentlist.append(ImitatingAgentV2(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
+                self.agentlist.append(ImitatingAgentV2(id=i+1))
             else:
-                self.agentlist.append(ZeroIntelligentAgent(id=i+1, sellprice=initsellprice(), bidprice=initbidprice()))
+                self.agentlist.append(ZeroIntelligentAgent(id=i+1))
+
+        # self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
 
         self.buyerlist = self.agentlist
 
@@ -71,15 +84,16 @@ class Market():
     def autoregressiveprocess1(dtminus1, wt): # Auto progressive of order 1
         return 10+ 0.95*(dtminus1 - 10)+ wt
 
-    def releaseDivideEnd(self,dMinusOne): 
+    def releaseDividend(self,dMinusOne): 
         '''
-        In the company of stock earns money, the company release profit to shareholder
+        In the company of this stock earns money, the company release profit to shareholder
         '''
         pass
 
     # Describe the function of the specialist’s in the market
     def newtrade(self):
         
+        # A random agent is selected, this agent will act to choose who to trade, the price, BUY/SELL/HOLD and amount of shares
         curr_agent = self.agentlist[random.randint(0,self.num_agents-1)]
         dealer, transaction_price, direction, quantity = curr_agent.newact(market=self)
 
@@ -92,7 +106,8 @@ class Market():
                 self.tradeSequence += '#'
 
             else:
-                # If there is someone willing to buy the share
+                # If there is someone willing to buy the share, the market sends the offer to the dealer
+                # If the dealer accepts the offer (Returning a true), the market proceed to update
                 if dealer.offer(direction=BUY, price=transaction_price, quantity=quantity):
                     # Update the market stockprice
                     self.record_order(transaction_price)
@@ -147,11 +162,10 @@ class Market():
 
                     else:
                         # If the dealer declines:
-                        print('Refuse to trade')
+                        print('The dealer refuse to sell')
                         self.record_order(self.stockprice)
                         self.tradeSequence += '#'
                 else:
-                    #input()
                     # Dealer is None and Market do not have enough share
                     self.tradeSequence += '#'
         else:
@@ -179,7 +193,7 @@ class Market():
 
 # Test 
 def _test():
-    m1.plotStockTrend()
+    pass
 
 if __name__ == '__main__':
     _test()

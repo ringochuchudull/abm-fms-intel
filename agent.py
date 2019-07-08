@@ -86,34 +86,42 @@ class ZeroIntelligentAgent(Agent):
     def sell(self, market=None, quantity=None): 
 
         # Method return a tuple of (dealing buyer, the transaction price, number of shares)
+
+        # Update its own bidPrice
         if self.updateSellorBidPrice():
             self.bidprice -= 1
-            
+        
+        # Randomly select a number
         quantity = int(np.random.uniform(0, self.share)) + 1
-        print('Sell quant ' + str(quantity))
-        if self.updateSellorBidPrice():
-            self.sellprice -= 1
+        #print('Sell quant ' + str(quantity))
+
 
         if not market.num_buyer: # If there's no buyer in the market
-            #market.record_order(market.stockprice)
+            # The agent cannot do anything but Hold
             return None, None, None
 
         else:
+            # Find the agent with the highest bidprice
             index = -1
             maxBuy = 1
             for i,s in enumerate(market.agentlist):
                 if s.bidprice > maxBuy:
                     index, maxBuy = i, s.bidprice
 
-            if index > -1: 
+            #If the agent can find the agent with the highest bidprice
+            
+            if index+1 is self.id: # If the agent is itself, then skip it...
+                #print('sell index', index, 'selfid',self.id)
+                #input()
+                return None, None, None
+
+            elif index > -1 :
+                # The agent cannot trade with itself
+                # input()
                 curr_buyer_agent = market.agentlist[index]
                 tranction_price = maxBuy
                 return curr_buyer_agent, tranction_price, quantity
 
-            elif index+1 is self.id:
-                # The agent cannot trade with itself
-                # input()
-                return None, None, None
             else:
                 #No suitable agent
                 return None, None, None
@@ -141,17 +149,18 @@ class ZeroIntelligentAgent(Agent):
             # Buy at market
             if market.stockprice < minSell and market.shares >= quantity:
                 return None, market.stockprice
+            
+            elif index+1 is self.id:
+                # The agent cannot trade with itself
+                #print('BUY index', index, 'selfid',self.id)
+                #input()
+                return None, None
 
             elif index > -1:
                 # Buy from Sellers
                 curr_seller_agent = market.agentlist[index]
                 tranction_price = minSell
                 return curr_seller_agent, tranction_price
-            
-            elif index+1 is self.id:
-                # The agent cannot trade with itself
-                # input()
-                return None, None, None
 
             else:
                 # No suitable conditions, contiune holding

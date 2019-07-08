@@ -32,8 +32,16 @@ Price updating rules are as follows.
     will have a bid price Pb. And buyer becomes a potential seller, he will have a
     sell price Ps. New Pb and Ps are defined differently in different models.
 
-================================
+===================================================
+Requirement:
+    Python3.7
+    Numpy
+    Matplotlib
+===================================================
 Useful resources:
+    Simple artifical stock market (Section 3):
+        https://warwick.ac.uk/fac/cross_fac/complexity/study/emmcs/outcomes/studentprojects/zhenji_lu.pdf
+
     background material:
         http://pages.stern.nyu.edu/~jhasbrou/Teaching/POST%20Draft%20syllabus/powerpoints/dealers.pdf
 

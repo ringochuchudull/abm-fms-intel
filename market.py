@@ -63,12 +63,6 @@ class Market():
         self.book.append(tranction_price)
         self.stockprice = tranction_price
 
-    def releaseDivideEnd(self,dMinusOne): 
-        '''
-        In the company of stock earns money, the company release profit to shareholder
-        '''
-        
-
     # Describe the function of the specialist’s in the market
     def newtrade(self):
         
@@ -147,7 +141,7 @@ class Market():
 
 # Test 
 def _test():
-    m1.plotStockTrend()
+    pass
 
 if __name__ == '__main__':
     _test()

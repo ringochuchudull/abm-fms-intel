@@ -13,11 +13,11 @@ class DesignYourOwnAgent(Agent):
     def __str__(self):
         return '<Agent ' + str(self.id) + ' > '
 
-    def newact(self):
+    def newact(self, market):
         # Your action when you're selected at a time step
         # This method should return 'dealer(Agent Object)', 'transaction_price(int)' 'direction(BUY/SELL/None), quantity(int)' 
     
-    def record(self, direction, trans_price, market, quantity=1):
+    def record(self, direction, price, market, quantity=1):
         # Update your internal state using this method
     
     def offer(self, price, quantity, direction):
@@ -46,15 +46,15 @@ class Agent:
     def __str__(self):
         return '<Agent ' + str(self.id) + ' > '
         
-    def record(self, direction, trans_price, market=None, quantity=1):
+    def record(self, direction, price, market, quantity=1):
 
         if direction: #If Sell
             self.share -= quantity
-            self.sell_record.append(trans_price)
+            self.sell_record.append(price)
 
         else:
             self.share += quantity
-            self.buy_record.append(trans_price)
+            self.buy_record.append(price)
 
     def newact(self):
         # Implementated in subclass accordingly to types of agents
@@ -222,9 +222,7 @@ class ZeroIntelligentAgent(Agent):
 # Subclass of ZeroIntelligentAgent, the only difference is this agent copies bid and sell price from random agent
 class ImitatingAgentV2(ZeroIntelligentAgent):
     def __init__(self, id, sellprice=maxP, bidprice=1):
-        ZeroIntelligentAgent.__init__(self, id, sellprice, bidprice)
-        self.sellprice = sellprice
-        self.bidprice = bidprice
+        ZeroIntelligentAgent.__init__(self, id)
 
     def __str__(self):
         return '<ImitatingQAgent %d owns %d share with sell price %f and bidprice %f>' % (
@@ -261,6 +259,68 @@ class ImitatingAgentV2(ZeroIntelligentAgent):
             #print('reset price')
             self.resetPrice(market=market)
 
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel, Matern
+
+class NormalProcessAgent(Agent):
+    def __init__(self, id):
+        Agent.__init__(self,id)
+        self.wealth = 0
+        self.sellprice = self.initsellprice()
+        self.bidprice = self.initbidprice()
+        self.kernel = Matern(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
+        self.predictor = GaussianProcessRegressor(kernel=self.kernel, n_restarts_optimizer=9)
+
+    def __str__(self):
+        return '<Gaussian Process Agent %d owns %d share with sell price %f and bidprice %f and Wealth $%s>' % (self.id, self.share, self.sellprice, self.bidprice, self.wealth)
+
+    def newact(self, market):
+        if self.share == 0:
+            # Buy at the market or agent with lowest sellPrice
+            index, minSell = -1, maxP
+            for i,s in enumerate(market.agentlist):
+                if s.sellprice < minSell:
+                    index, minSell = i, s.sellprice
+            print('Agent ' + str(index+1) + ' offers to sell the lowest price £' + str(minSell) +' (0 is the market)')
+
+            if index+1 == self.id:
+                return NO_ACTION
+            elif index > -1: #Possible agent
+                if minSell < market.stockprice: # Buy from agent
+                    # 'dealer(Agent Object)', 'transaction_price(int)' 'direction(BUY/SELL/None), quantity(int)'
+                    d = market.agentlist[index]
+                    return d, d.sellprice, BUY, 1
+
+                elif market.shares > 0: # Buy from market
+                    return None, market.stockprice, BUY, 1
+                else:
+                    return NO_ACTION
+        else:
+
+            return NO_ACTION
+
+    def offer(self, price, quantity, direction): 
+        return False
+
+    @staticmethod
+    def create_ts(ds, series=7):
+        X, Y =[], []
+        for i in range(len(ds)-series - 1):
+            item = ds[i:(i+series)]
+            X.append(item)
+            Y.append(ds[i+series])
+        return np.array(X), np.array(Y)
+
+    def initbidprice(self):
+        low = maxP/3
+        high = maxP/2
+        return round(np.random.uniform(low=low, high=high, size=None), 2)
+
+    def initsellprice(self):
+        low = maxP/2
+        high = maxP*2/3
+        return round(np.random.uniform(low=low, high=high, size=None), 2)
+
 
 class PalamAgent(Agent):
     def __init__(self, id, sellprice=maxP, bidprice=1):
@@ -296,4 +356,17 @@ class PalamAgent(Agent):
 
 # Test
 if __name__ == '__main__':
-    pass
+    from sklearn.gaussian_process import GaussianProcessRegressor
+    from sklearn.gaussian_process.kernels import RBF, ConstantKernel, Matern
+
+    a = np.array(list(range(20)))
+    print(a)
+    kernel = Matern(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
+    predictor = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9)
+    
+    trainX, trainY = NormalProcessAgent.create_ts(a, series=3)
+    print(trainX)
+    print(trainY)
+    predictor.fit(trainX, trainY)
+    test = predictor.predict([a[-3::]])
+    print(test)

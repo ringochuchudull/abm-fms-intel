@@ -308,7 +308,7 @@ class NormalProcessAgent(Agent):
             # Buy at the market or agent with lowest sellPrice
             index, minSell = -1, maxP
             for i,s in enumerate(market.agentlist):
-                if s.sellprice < minSell:
+                if s.sellprice < minSell and s.share >= 1:
                     index, minSell = i, s.sellprice
             print('Agent ' + str(index+1) + ' offers to sell the lowest price £' + str(minSell) +' (0 is the market)')
 
@@ -324,12 +324,129 @@ class NormalProcessAgent(Agent):
                     return None, market.stockprice, BUY, 1
                 else:
                     return NO_ACTION
+
+            else:
+                return NO_ACTION
         else:
 
-            return NO_ACTION
+            # Train the predictor
+            if len(market.tradeSequence) > 10:
+                #input()
+                book = market.book[-30:]
+                X, Y = self.create_ts(book, series=6)
+                self.trainPredictor(X,Y)
+                #input()
+                
+                pre_proc = book[-7:] + [0]
+                future, _ = self.create_ts(pre_proc, series=6)
+                future = self.predictPredictor(future)
+
+                future_value = future[0]
+                print(future_value)
+                if future_value > market.stockprice:
+                    direction = BUY
+                    quantity = 1
+                    if not market.num_seller: # If no one in the market sells, then look for available shares in the market
+                        if market.shares <= quantity: # If there're encough nymber of shares in the market, purchase it, o
+                            print('No agent sells, so buy from market')
+                            return 'market', market.stockprice, direction, 1
+                        else:
+                            print('No agent sells and No available market')
+                            return NO_ACTION
+                    else:
+                        index = -1
+                        minSell = INFINITY
+                        for i,s in enumerate(market.agentlist):
+                            if s.sellprice < minSell and s.share >= quantity:
+                                index, minSell = i, s.sellprice
+                        
+                        if index is not -1:
+                            print('Agent ' + str(index+1) + ' offers to sell to' +str(self.id)+' price £' + str(minSell) + ' with Quantity'+ str(quantity)+ ' (0 is the market)')
+
+                        # Buy at market
+                        if market.stockprice < minSell and market.shares >= quantity:
+                            print('The market has ' + str(quantity) + ' share and current stockprice is lower' + str(market.stockprice) )
+                            return None, market.stockprice, direction, 1
+                        
+                        elif index+1 is self.id:
+                            # The agent cannot trade with itself
+                            #print('BUY index', index, 'selfid',self.id)
+                            #input()
+                            print('The agent cannot trade with himself')
+                            return NO_ACTION
+
+                        elif index > -1:
+                            # Buy from Sellers
+                            print('Agent ' + str(self.id) + ' hopes to buy from agent ' +str(index+1))
+                            curr_seller_agent = market.agentlist[index]
+                            tranction_price = minSell
+                            return curr_seller_agent, tranction_price, direction, 1
+
+                        else:
+                            # No suitable conditions, contiune holding
+                            print('Agent ' + str(self.id) + 'cannot find a suitable agent')
+                            return NO_ACTION
+
+                else:
+                    if self.share > 0:
+                        direction = SELL
+                        quantity = 1
+
+                        if not market.num_buyer: # If there's no buyer in the market
+                            # The agent cannot do anything but Hold
+                            print('There is no buyers in the market')
+                            return NO_ACTION
+
+                        else:
+                            # Find the agent with the highest bidprice
+                            index = -1
+                            maxBuy = 1
+                            for i,s in enumerate(market.agentlist):
+                                if s.bidprice > maxBuy:
+                                    index, maxBuy = i, s.bidprice
+
+                            #If the agent can find the agent with the highest bidprice
+
+                            if index is not -1:
+                                print('Agent ' + str(index+1) + ' offers to buy from ' +str(self.id)+' price with Quantity '+ str(quantity))
+
+                            if index+1 is self.id: # If the agent is itself, then skip it...
+                                print('The agent cannot trade with itself')
+                                return NO_ACTION
+
+                            elif index > -1 :
+                                # The agent cannot trade with itself
+                                # input()
+                                print('Agent ' + str(self.id) + ' hopes to sell to agent ' +str(index+1))
+                                curr_buyer_agent = market.agentlist[index]
+                                tranction_price = maxBuy
+
+                                return curr_buyer_agent, tranction_price, direction, quantity
+
+                            else:
+                                #No suitable buying agent
+                                print('Cannot find a suitable buying agent')
+
+                                return NO_ACTION
+                    else:
+                        return NO_ACTION
+             
+            else:
+                return NO_ACTION
 
     def offer(self, price, quantity, direction): 
         return False
+
+    def record(self, direction, price, market, quantity=1):
+        
+        if direction is BUY:
+            self.wealth -= price*quantity
+            self.share += quantity
+        elif direction is SELL:
+            self.wealth += price*quantity
+            self.share -= quantity
+        else:
+            pass
 
     @staticmethod
     def create_ts(ds, series=7):
@@ -339,6 +456,12 @@ class NormalProcessAgent(Agent):
             X.append(item)
             Y.append(ds[i+series])
         return np.array(X), np.array(Y)
+    
+    def trainPredictor(self, X, Y):
+        self.predictor.fit(X,Y)
+
+    def predictPredictor(self, X):
+        return self.predictor.predict(X)
 
     def initbidprice(self):
         low = maxP/3

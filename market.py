@@ -67,14 +67,14 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            if probabilityGenerator(1):
+            if probabilityGenerator(0.6):
                 if probabilityGenerator(0.4):
                     self.agentlist.append(ImitatingAgentV2(id=i+1))
                 else:
                     self.agentlist.append(ZeroIntelligentAgent(id=i+1))
             else:
-                pass
-                #self.agentlist.append(NormalProcessAgent(id=i+1))
+                #pass
+                self.agentlist.append(NormalProcessAgent(id=i+1))
         # self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
         self.buyerlist = self.agentlist
 

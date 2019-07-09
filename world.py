@@ -3,22 +3,19 @@ from agent import *
 from market import *
 import random
 import matplotlib.pyplot as plt
+matplotlib.use('TkAgg')
+
 
 if __name__ == '__main__':
     
     m1 = Market(num_agents=25,steps=500)
     m1.run()
-    print(len(m1.tradeSequence))
+    print(m1.tradeSequence)
     m1.plotStockTrend()
 
-    #print(m1.book)
-    #print(m1.num_buyer,m1.num_seller)
-    #m1.plotStockTrend()
-    #import numpy as np
-    #import matplotlib.pyplot as plt
-    #plt.axis([0, 10, 0, 1])
-    #for i in range(10):
-    #   y = np.random.random()
-    #    plt.scatter(i, y)
-    #    plt.pause(0.1)
-    #plt.show()
+    data = m1.book
+
+    TEST = NormalProcessAgent(id=-1)
+    X, Y = TEST.create_ts(data, series=4)
+    print(X, Y)
+    print(X.shape, Y.shape)

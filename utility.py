@@ -7,6 +7,7 @@ HOLD = -1
 maxP = 2000
 minP = 1
 
+INFINITY = float('inf')
 draft_param = 0.3
 
 NO_ACTION = (None, None, None, None)

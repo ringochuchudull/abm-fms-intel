@@ -2,7 +2,8 @@ from utility import *
 from agent import *
 import random
 import matplotlib.pyplot as plt
-
+import matplotlib
+matplotlib.use('TkAgg')
 
 class Market():
 
@@ -39,7 +40,7 @@ class Market():
         self.shares = int(num_agents/2)
         
         # Initial Stock Price
-        self.stockprice = int(maxP/1.65)
+        self.stockprice = maxP/1.65
         
         # An array to keep trace of all transaction price
         self.book = []
@@ -66,15 +67,15 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            if probabilityGenerator(0.7):
-                if probabilityGenerator(0.3):
+            if probabilityGenerator(1):
+                if probabilityGenerator(0.4):
                     self.agentlist.append(ImitatingAgentV2(id=i+1))
                 else:
                     self.agentlist.append(ZeroIntelligentAgent(id=i+1))
             else:
-                self.agentlist.append(NormalProcessAgent(id=i+1))
+                pass
+                #self.agentlist.append(NormalProcessAgent(id=i+1))
         # self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
-
         self.buyerlist = self.agentlist
 
     def record_order(self, tranction_price):
@@ -96,6 +97,8 @@ class Market():
         
         # A random agent is selected, this agent will act to choose who to trade, the price, BUY/SELL/HOLD and amount of shares
         curr_agent = self.agentlist[random.randint(0,self.num_agents-1)]
+
+        print(str(curr_agent.id) + ' is selected at this time step')
         dealer, transaction_price, direction, quantity = curr_agent.newact(market=self)
 
         if direction is SELL:
@@ -121,10 +124,10 @@ class Market():
                     dealer.record(direction=BUY, price=transaction_price, market=self, quantity=quantity)
                     self.num_buyer -= 1
                     self.num_seller += 1
-
-                    print('Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
-                    print('Agent ' + str(curr_agent.id) + ' sell to Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
-
+                    print('+++++++++++++++Annoucement from the market++++++++++++++++++=+')
+                    #print('| Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
+                    print('|Agent ' + str(curr_agent.id) + ' sold ' + str(quantity)+' shares to Agent ' + str(dealer.id) + ' at price £' + str(transaction_price) +'|')
+                    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
                     self.tradeSequence += '1'
                 else:
                     print('Offer declined')
@@ -141,7 +144,7 @@ class Market():
 
                     self.num_buyer -= 1
                     self.num_seller += 1
-                    print('Agent ' + str(curr_agent.id) + ' buys from Market')
+                    print('Agent ' + str(curr_agent.id) + ' buys from Market at price £' + str(self.stockprice))
                     self.tradeSequence += '0'
 
                 elif dealer is not None: # There is a suitable dealer
@@ -158,19 +161,25 @@ class Market():
                         self.num_seller -= 1
                         self.num_buyer += 1
 
-                        print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
+                        print('+++++++++++++++Annoucement from the market++++++++++++++++++=+')
+                        #print('| Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
+                        print('|Agent ' + str(curr_agent.id) + ' buys ' + str(quantity)+' shares from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price) +'|')
+                        print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+                        #print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
                         self.tradeSequence += '0'
 
                     else:
                         # If the dealer declines:
-                        print('The dealer refuse to sell')
+                        print('The dealer refuse to sell, offer declined')
                         self.record_order(self.stockprice)
                         self.tradeSequence += '#'
                 else:
                     # Dealer is None and Market do not have enough share
+                    print('The agent cannot find a suitable dealer and the market does not have enough share')
+                    self.record_order(self.stockprice)
                     self.tradeSequence += '#'
         else:
-            print('Neither Buy nor Sell')
+            print('Neither Buy nor Sell or maybe its hold')
             self.tradeSequence += '#'
             self.record_order(self.stockprice)
             

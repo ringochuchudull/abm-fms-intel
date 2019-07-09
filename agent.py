@@ -1,6 +1,7 @@
 from utility import *
 import random
-import numpy as np #np.exp
+import numpy as np
+import scipy as sp
 
 '''
 # Template for designing Your agent
@@ -71,17 +72,28 @@ class Agent:
 
 # Sub Class
 class ZeroIntelligentAgent(Agent):
+
     def __init__(self, id, sellprice=maxP, bidprice=1):
         Agent.__init__(self,id)
         self.sellprice = self.initsellprice()
         self.bidprice = self.initbidprice()
+        self.mu, self.sigma = 0, 1 
     
     def __str__(self):
         return '<0IQAgent %d owns %d share with sell price %f and bidprice %f>' % (self.id, self.share, self.sellprice, self.bidprice)
 
+
+    # This Function needs clarifcation !!!!!!!!!!!
     def resetPrice(self,price, direction=None):
-        self.sellprice = random.randint(price, maxP)
-        self.bidprice = random.randint(1, price)
+        
+        swing = random.randint(0, 65)
+        Pb = np.random.normal(price-swing, self.sigma)
+        Ps = np.random.normal(price+swing, self.sigma)
+
+        self.sellprice = Ps     #random.randint(price, maxP)
+        self.bidprice = Pb      #random.randint(1, price)
+
+        # Normal Skew Disdributtion
 
     def sell(self, market=None, quantity=None): 
 
@@ -94,10 +106,11 @@ class ZeroIntelligentAgent(Agent):
         # Randomly select a number
         quantity = int(np.random.uniform(0, self.share)) + 1
         #print('Sell quant ' + str(quantity))
-
+        print('Agent wants to sell ' + str(quantity) + ' shares')
 
         if not market.num_buyer: # If there's no buyer in the market
             # The agent cannot do anything but Hold
+            print('There is no buyers in the market')
             return None, None, None
 
         else:
@@ -109,21 +122,29 @@ class ZeroIntelligentAgent(Agent):
                     index, maxBuy = i, s.bidprice
 
             #If the agent can find the agent with the highest bidprice
-            
+
+            if index is not -1:
+                print('Agent ' + str(index+1) + ' offers to buy from ' +str(self.id)+' price with Quantity '+ str(quantity))
+
             if index+1 is self.id: # If the agent is itself, then skip it...
                 #print('sell index', index, 'selfid',self.id)
                 #input()
+                print('The agent cannot trade with itself')
                 return None, None, None
 
             elif index > -1 :
                 # The agent cannot trade with itself
                 # input()
+                print('Agent ' + str(self.id) + ' hopes to sell to agent ' +str(index+1))
                 curr_buyer_agent = market.agentlist[index]
                 tranction_price = maxBuy
+
                 return curr_buyer_agent, tranction_price, quantity
 
             else:
-                #No suitable agent
+                #No suitable buying agent
+                print('Cannot find a suitable buying agent')
+
                 return None, None, None
 
     def buy(self, market=None, quantity=1):
@@ -133,37 +154,45 @@ class ZeroIntelligentAgent(Agent):
 
         if not market.num_seller: # If no one in the market sells, then look for available shares in the market
             if market.shares <= quantity: # If there're encough nymber of shares in the market, purchase it, o
-                print('No one sells, buy from market')
+                print('No agent sells, so buy from market')
+                #input()
                 return 'market', market.stockprice
             else:
+                print('No agent sells and No available market')
                 return None, market.stockprice
 
         else:
             index = -1
-            minSell = maxP
+            minSell = INFINITY
             for i,s in enumerate(market.agentlist):
                 if s.sellprice < minSell and s.share >= quantity:
                     index, minSell = i, s.sellprice
-            print('Agent ' + str(index+1) + ' offers to sell the lowest price £' + str(minSell) +' (0 is the market)')
+            
+            if index is not -1:
+                print('Agent ' + str(index+1) + ' offers to sell to' +str(self.id)+' price £' + str(minSell) + ' with Quantity'+ str(quantity)+ ' (0 is the market)')
 
             # Buy at market
             if market.stockprice < minSell and market.shares >= quantity:
+                print('The market has ' + str(quantity) + ' share and current stockprice is lower' + str(market.stockprice) )
                 return None, market.stockprice
             
             elif index+1 is self.id:
                 # The agent cannot trade with itself
                 #print('BUY index', index, 'selfid',self.id)
                 #input()
+                print('The agent cannot trade with himself')
                 return None, None
 
             elif index > -1:
                 # Buy from Sellers
+                print('Agent ' + str(self.id) + ' hopes to buy from agent ' +str(index+1))
                 curr_seller_agent = market.agentlist[index]
                 tranction_price = minSell
                 return curr_seller_agent, tranction_price
 
             else:
                 # No suitable conditions, contiune holding
+                print('Agent ' + str(self.id) + 'cannot find a suitable agent')
                 return None, None
 
     def newact(self, market):
@@ -175,8 +204,8 @@ class ZeroIntelligentAgent(Agent):
             return current_buyer, transaction_price, direction, q
 
         else:
-            quant = int(np.random.uniform(1, market.maxPurchase))
-            print('buying quant'+ str(quant))
+            quant = int(np.random.uniform(1, market.maxPurchase-1))
+            print('This agent wants to buy shares quantity: '+ str(quant))
             direction = BUY
             current_seller, transaction_price = self.buy(market=market, quantity=quant)
             return current_seller, transaction_price, direction, quant
@@ -202,13 +231,13 @@ class ZeroIntelligentAgent(Agent):
 
     # Supportive functions        
     def initbidprice(self):
-        low = maxP/3
-        high = maxP/2
+        low = int(maxP/3)
+        high = int(maxP/2)
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
     def initsellprice(self):
-        low = maxP/2
-        high = maxP*2/3
+        low = int(maxP/2)
+        high = int(maxP*2/3)
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
     def updateSellorBidPrice(self):
@@ -356,17 +385,34 @@ class PalamAgent(Agent):
 
 # Test
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    from scipy.stats import skewnorm
+    from scipy.stats import skewnorm
+    a = []
+    mu, sigma = 1000, 1  
+    one = np.random.normal(1000, sigma, size=1)
+    for _ in range(1000):
+        one = np.random.normal(mu, sigma)
+        a.append(one)
+    
+
+    B = a
+    print(B)
+    plt.hist(B)
+    plt.show()
+
     from sklearn.gaussian_process import GaussianProcessRegressor
     from sklearn.gaussian_process.kernels import RBF, ConstantKernel, Matern
-
-    a = np.array(list(range(20)))
+    import random 
+    a = list(range(10))
+    a = np.array(a)
     print(a)
     kernel = Matern(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
     predictor = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9)
     
-    trainX, trainY = NormalProcessAgent.create_ts(a, series=3)
+    trainX, trainY = NormalProcessAgent.create_ts(a, series=4)
     print(trainX)
     print(trainY)
     predictor.fit(trainX, trainY)
-    test = predictor.predict([a[-3::]])
+    test = predictor.predict([a[-4::]])
     print(test)

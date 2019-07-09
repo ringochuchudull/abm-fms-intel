@@ -2,8 +2,6 @@ from utility import *
 from agent import *
 import random
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('TkAgg')
 
 class Market():
 
@@ -40,7 +38,7 @@ class Market():
         self.shares = int(num_agents/2)
         
         # Initial Stock Price
-        self.stockprice = maxP/1.65
+        self.stockprice = PickLastClosePrice() - randomNumberGenerator(-2, 6)
         
         # An array to keep trace of all transaction price
         self.book = []
@@ -67,7 +65,7 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            if probabilityGenerator(0.6):
+            if probabilityGenerator(0.5):
                 if probabilityGenerator(0.4):
                     self.agentlist.append(ImitatingAgentV2(id=i+1))
                 else:
@@ -182,7 +180,12 @@ class Market():
             print('Neither Buy nor Sell or maybe its hold')
             self.tradeSequence += '#'
             self.record_order(self.stockprice)
-            
+        
+        last_transaction = self.tradeSequence[-1]
+        if last_transaction is '#':
+            #Hold... Increase condifence and boost up stockprice
+            self.stockprice += 0.5
+            self.book[-1] = self.stockprice
         self.showMarketAgent()
 
 
@@ -199,7 +202,14 @@ class Market():
         print('-----------------------------------')
 
     def plotStockTrend(self):
-        plt.plot(self.book)
+        #xaxis = list(range(self.steps))
+        #plt.stackplot(self.book, color='#000099')
+
+        plt.figure(figsize=(20,10))
+        plt.plot(self.book, color='#000099')
+        ax = plt.gca()  
+        ax.set_facecolor('#a6a6a6')                 #('xkcd:salmon')
+        plt.grid(color='black')
         plt.show()
 
 # Test 

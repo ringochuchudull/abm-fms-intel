@@ -231,13 +231,15 @@ class ZeroIntelligentAgent(Agent):
 
     # Supportive functions        
     def initbidprice(self):
+        #maxP = PickLastClosePrice()
         low = int(maxP/3)
         high = int(maxP/2)
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
     def initsellprice(self):
-        low = int(maxP/2)
-        high = int(maxP*2/3)
+        self.maxP = PickLastClosePrice()
+        low = int(self.maxP/2)
+        high = int(self.maxP*2/3)
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
     def updateSellorBidPrice(self):
@@ -299,6 +301,7 @@ class NormalProcessAgent(Agent):
         self.bidprice = self.initbidprice()
         self.kernel = Matern(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
         self.predictor = GaussianProcessRegressor(kernel=self.kernel, n_restarts_optimizer=9)
+        
 
     def __str__(self):
         return '<Gaussian Process Agent %d owns %d share with sell price %f and bidprice %f and Wealth $%s>' % (self.id, self.share, self.sellprice, self.bidprice, self.wealth)

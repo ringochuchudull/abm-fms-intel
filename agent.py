@@ -77,7 +77,7 @@ class ZeroIntelligentAgent(Agent):
         Agent.__init__(self,id)
         self.sellprice = self.initsellprice()
         self.bidprice = self.initbidprice()
-        self.mu, self.sigma = 0, 1 
+        self.mu, self.sigma = 0, 2 
     
     def __str__(self):
         return '<0IQAgent %d owns %d share with sell price %f and bidprice %f>' % (self.id, self.share, self.sellprice, self.bidprice)
@@ -86,7 +86,7 @@ class ZeroIntelligentAgent(Agent):
     # This Function needs clarifcation !!!!!!!!!!!
     def resetPrice(self,price, direction=None):
         
-        swing = random.randint(0, 65)
+        swing = random.randint(0, 45)
         Pb = np.random.normal(price-swing, self.sigma)
         Ps = np.random.normal(price+swing, self.sigma)
 
@@ -224,7 +224,7 @@ class ZeroIntelligentAgent(Agent):
             #print('reset price')
             self.resetPrice(int(price), direction)
 
-    def offer(self, price, quantity, direction):
+    def offer(self, price, quantity, direction, market):
         if probabilityGenerator(0.2):
             return False
         return True
@@ -307,6 +307,7 @@ class NormalProcessAgent(Agent):
         return '<Gaussian Process Agent %d owns %d share with sell price %f and bidprice %f and Wealth $%s>' % (self.id, self.share, self.sellprice, self.bidprice, self.wealth)
 
     def newact(self, market):
+        #input()
         if self.share == 0:
             # Buy at the market or agent with lowest sellPrice
             index, minSell = -1, maxP
@@ -337,6 +338,8 @@ class NormalProcessAgent(Agent):
                 #input()
                 book = market.book[-30:]
                 X, Y = self.create_ts(book, series=6)
+                print(X.shape, Y.shape) # 16,6  16,1
+                #input()
                 self.trainPredictor(X,Y)
                 #input()
                 
@@ -344,7 +347,7 @@ class NormalProcessAgent(Agent):
                 future, _ = self.create_ts(pre_proc, series=6)
                 future = self.predictPredictor(future)
 
-                future_value = future[0]
+                future_value = np.exp(future[0])
                 print(future_value)
                 if future_value > market.stockprice:
                     direction = BUY
@@ -437,7 +440,18 @@ class NormalProcessAgent(Agent):
             else:
                 return NO_ACTION
 
-    def offer(self, price, quantity, direction): 
+    def offer(self, price, quantity, direction, market): 
+
+        last_21days = market.book[-21:]
+        _x, _ = NormalProcessAgent.create_ts(last_21days, series=6)
+        future = np.exp(self.predictor.predict(_x)[0])
+
+        if future > market.stockprice and direction is BUY:
+            return True
+
+        elif future < market.stockprice and direction is SELL:
+            return False
+
         return False
 
     def record(self, direction, price, market, quantity=1):
@@ -451,6 +465,8 @@ class NormalProcessAgent(Agent):
         else:
             pass
 
+        self.resetPrice(price=price)
+
     @staticmethod
     def create_ts(ds, series=7):
         X, Y =[], []
@@ -458,7 +474,7 @@ class NormalProcessAgent(Agent):
             item = ds[i:(i+series)]
             X.append(item)
             Y.append(ds[i+series])
-        return np.array(X), np.array(Y)
+        return np.log(np.array(X)), np.log(np.array(Y)).reshape(-1,1)
     
     def trainPredictor(self, X, Y):
         self.predictor.fit(X,Y)
@@ -476,6 +492,14 @@ class NormalProcessAgent(Agent):
         high = maxP*2/3
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
+    def resetPrice(self,price, direction=None):
+        
+        swing = random.randint(0, 100)
+        Pb = np.random.normal(price-swing, 0.8)
+        Ps = np.random.normal(price+swing, 0.8)
+
+        self.sellprice = Ps     #random.randint(price, maxP)
+        self.bidprice = Pb      #random.randint(1, price)
 
 class PalamAgent(Agent):
     def __init__(self, id, sellprice=maxP, bidprice=1):

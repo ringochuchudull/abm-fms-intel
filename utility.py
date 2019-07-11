@@ -41,22 +41,25 @@ def saveToCSV(marketList):
         print("I/O error") 
 
 def plotCandleGraph(file='LOGDATA.csv'):
-    import plotly
-    plotly.tools.set_credentials_file(username='ringochu1997', api_key='XaoFk2TtUzLwKdNAn4vU')
-    import plotly.plotly as py
-    import plotly.graph_objs as go
+    try:
+        import plotly
+        plotly.tools.set_credentials_file(username='ringochu1997', api_key='XaoFk2TtUzLwKdNAn4vU')
+        import plotly.plotly as py
+        import plotly.graph_objs as go
 
-    df = pd.read_csv(file)
-    open1, close1, high1, low1 = df['OPEN'], df['CLOSE'], df['HIGH'], df['LOW']
+        df = pd.read_csv(file)
+        open1, close1, high1, low1 = df['OPEN'], df['CLOSE'], df['HIGH'], df['LOW']
 
-    #print(open1, close1, high1, low1)
-    trace = go.Candlestick(
-                    open=open1,
-                    high=high1,
-                    low=low1,
-                    close=close1)
-    data = [trace]
-    py.iplot(data, filename='Intel-fake-market')
+        #print(open1, close1, high1, low1)
+        trace = go.Candlestick(
+                        open=open1,
+                        high=high1,
+                        low=low1,
+                        close=close1)
+        data = [trace]
+        py.iplot(data, filename='Intel-fake-market')
+    except:
+        print('Install plotly via pip')
 
 def PickLastClosePrice(file='LOGDATA.csv'):
     df = pd.read_csv(file)

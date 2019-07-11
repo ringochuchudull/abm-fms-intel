@@ -3,6 +3,7 @@ from agent import *
 import random
 import matplotlib.pyplot as plt
 
+random.seed()
 class Market():
 
     '''
@@ -65,8 +66,8 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            if probabilityGenerator(0.5):
-                if probabilityGenerator(0.4):
+            if probabilityGenerator(0.6):
+                if probabilityGenerator(0.15):
                     self.agentlist.append(ImitatingAgentV2(id=i+1))
                 else:
                     self.agentlist.append(ZeroIntelligentAgent(id=i+1))
@@ -110,7 +111,7 @@ class Market():
             else:
                 # If there is someone willing to buy the share, the market sends the offer to the dealer
                 # If the dealer accepts the offer (Returning a true), the market proceed to update
-                if dealer.offer(direction=BUY, price=transaction_price, quantity=quantity):
+                if dealer.offer(direction=BUY, price=transaction_price, quantity=quantity, market=self):
                     # Update the market stockprice
                     self.record_order(transaction_price)
 
@@ -148,7 +149,7 @@ class Market():
                 elif dealer is not None: # There is a suitable dealer
 
                     # Ask the dealer whether to accept
-                    if dealer.offer(direction=SELL, price=transaction_price, quantity=quantity):
+                    if dealer.offer(direction=SELL, price=transaction_price, quantity=quantity, market=self):
                         self.record_order(transaction_price)
                         curr_agent.record(direction=BUY, price=transaction_price, market=self, quantity=quantity)
                         self.num_buyer -= 1

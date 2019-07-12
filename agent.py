@@ -237,9 +237,9 @@ class ZeroIntelligentAgent(Agent):
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
     def initsellprice(self):
-        self.maxP = PickLastClosePrice()
-        low = int(self.maxP/2)
-        high = int(self.maxP*2/3)
+        #self.maxP = PickLastClosePrice()
+        low = int(maxP/2)
+        high = int(maxP*2/3)
         return round(np.random.uniform(low=low, high=high, size=None), 2)
 
     def updateSellorBidPrice(self):

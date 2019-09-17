@@ -39,7 +39,7 @@ class Market():
         self.shares = int(num_agents/2)
         
         # Initial Stock Price
-        self.stockprice = PickLastClosePrice() - randomNumberGenerator(-2, 6)
+        self.stockprice = 1250  #PickLastClosePrice() - randomNumberGenerator(-2, 6)
         
         # An array to keep trace of all transaction price
         self.book = []
@@ -66,13 +66,12 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            if probabilityGenerator(0.6):
+            if probabilityGenerator(0.8):
                 if probabilityGenerator(0.15):
                     self.agentlist.append(ImitatingAgentV2(id=i+1))
                 else:
                     self.agentlist.append(ZeroIntelligentAgent(id=i+1))
             else:
-                #pass
                 self.agentlist.append(NormalProcessAgent(id=i+1))
         # self.agentlist.append(ZeroIntelligentAgent(id=i + 1, sellprice=initsellprice(), bidprice=initbidprice()))
         self.buyerlist = self.agentlist
@@ -124,7 +123,6 @@ class Market():
                     self.num_buyer -= 1
                     self.num_seller += 1
                     print('+++++++++++++++Annoucement from the market++++++++++++++++++=+')
-                    #print('| Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
                     print('|Agent ' + str(curr_agent.id) + ' sold ' + str(quantity)+' shares to Agent ' + str(dealer.id) + ' at price £' + str(transaction_price) +'|')
                     print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
                     self.tradeSequence += '1'
@@ -161,10 +159,9 @@ class Market():
                         self.num_buyer += 1
 
                         print('+++++++++++++++Annoucement from the market++++++++++++++++++=+')
-                        #print('| Agent ' + str(dealer.id) + ' offers to buy the highest price £' + str(transaction_price))
                         print('|Agent ' + str(curr_agent.id) + ' buys ' + str(quantity)+' shares from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price) +'|')
                         print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-                        #print('Agent ' + str(curr_agent.id) + ' buys from Agent ' + str(dealer.id) + ' at price £' + str(transaction_price))
+
                         self.tradeSequence += '0'
 
                     else:
@@ -189,11 +186,9 @@ class Market():
             self.book[-1] = self.stockprice
         self.showMarketAgent()
 
-
     def run(self):
         for _ in range(self.steps):
             self.newtrade()
-            #input()
 
     def showMarketAgent(self):
         print('-------------------------------------')
@@ -203,8 +198,6 @@ class Market():
         print('-----------------------------------')
 
     def plotStockTrend(self):
-        #xaxis = list(range(self.steps))
-        #plt.stackplot(self.book, color='#000099')
 
         plt.figure(figsize=(20,10))
         plt.plot(self.book, color='#000099')

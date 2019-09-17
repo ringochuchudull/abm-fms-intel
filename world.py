@@ -10,10 +10,9 @@ if __name__ == '__main__':
         num_agents = int(randomNumberGenerator(15, 36))        
         m1 = Market(num_agents=num_agents,steps=500)
         m1.run()
-        saveToCSV(m1.book)
+        #saveToCSV(m1.book)
 
-    #print(m1.tradeSequence)
-    saveToCSV(m1.book)
+    #saveToCSV(m1.book)
     m1.plotStockTrend()
 
 

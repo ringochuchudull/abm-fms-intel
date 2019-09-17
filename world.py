@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     
     for _ in range(1):
-        num_agents = int(randomNumberGenerator(15, 36))        
-        m1 = Market(num_agents=num_agents,steps=500)
+        num_agents = int(randomNumberGenerator(85, 100))
+        m1 = Market(num_agents=num_agents,steps=1200)
         m1.run()
         #saveToCSV(m1.book)
 

@@ -66,8 +66,8 @@ class Market():
     def populate(self, n):
         # Create N agents
         for i in range(n):
-            if probabilityGenerator(0.8):
-                if probabilityGenerator(0.15):
+            if probabilityGenerator(0.6):
+                if probabilityGenerator(0.40):
                     self.agentlist.append(ImitatingAgentV2(id=i+1))
                 else:
                     self.agentlist.append(ZeroIntelligentAgent(id=i+1))

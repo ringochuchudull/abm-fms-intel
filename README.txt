@@ -39,10 +39,8 @@ Agent based modelling for financial stock market.
         sell price Ps. New Pb and Ps are defined differently in different models.
 
 
-
 2. How to use it
 ————————————————————————————————————————————————————————————————————————————————————————
-
     Requirement:
         Python3.7
         Numpy
@@ -52,12 +50,9 @@ Agent based modelling for financial stock market.
         python world.py
 
 
-
 3. Acknowledgement 
 —————————————————————————————————————————————
-
-   brought to you by Intel
-
+   Brought to you by Intel
 
 
 4. Useful resources:
